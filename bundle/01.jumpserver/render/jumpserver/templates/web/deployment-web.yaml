@@ -1,0 +1,75 @@
+---
+# Source: jumpserver/templates/web/deployment-web.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "jumpserver-jms-web"
+  labels:
+    app.kubernetes.io/name: jumpserver
+    helm.sh/chart: jumpserver-v4.3.1
+    app.kubernetes.io/instance: jumpserver
+    app.kubernetes.io/version: "v4.3.1"
+    app.kubernetes.io/managed-by: Helm
+    app.jumpserver.org/name: jms-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: jumpserver
+      app.kubernetes.io/instance: jumpserver
+      app.jumpserver.org/name: jms-web
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: jumpserver
+        app.kubernetes.io/instance: jumpserver
+        app.jumpserver.org/name: jms-web
+    spec:
+      serviceAccountName: default
+      securityContext:
+        {}
+      containers:
+        - name: jms-web
+          securityContext:
+            {}
+          image: "docker.io/jumpserver/web:v4.3.1-ce"
+          imagePullPolicy: "IfNotPresent"
+          env:
+            - name: CLIENT_MAX_BODY_SIZE
+              value: "4096m"
+            - name: USE_LB
+              value: "0"
+          ports:
+            - name: web
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /api/health/
+              port: web
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            null
+          resources:
+            {}
+          volumeMounts:
+            - mountPath: "/etc/nginx/sites-enabled/jms.conf"
+              name: "jms-web-config"
+              subPath: "default.conf"
+            - mountPath: "/opt/jumpserver/data"
+              name: "jms-core-data"
+            - mountPath: "/var/log/nginx"
+              name: "jms-web-logs"
+      restartPolicy: Always
+      volumes:
+        - configMap:
+            name: 'jumpserver-jms-web'
+          name: "jms-web-config"
+        - persistentVolumeClaim:
+            claimName: 'jumpserver-jms-core-data'
+          name: "jms-core-data"
+        - persistentVolumeClaim:
+            claimName: 'jumpserver-jms-web-logs'
+          name: "jms-web-logs"

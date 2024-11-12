@@ -1,0 +1,30 @@
+---
+# Source: jumpserver/templates/chen/service-chen.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: "jumpserver-jms-chen"
+  labels:
+    app.kubernetes.io/name: jumpserver
+    helm.sh/chart: jumpserver-v4.3.1
+    app.kubernetes.io/instance: jumpserver
+    app.kubernetes.io/version: "v4.3.1"
+    app.kubernetes.io/managed-by: Helm
+    app.jumpserver.org/name: jms-chen
+  annotations:
+    null
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8082
+      targetPort: web
+      protocol: TCP
+      name: web
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+  selector:
+    app.kubernetes.io/name: jumpserver
+    app.kubernetes.io/instance: jumpserver
+    app.jumpserver.org/name: jms-chen

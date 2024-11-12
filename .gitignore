@@ -1,0 +1,6 @@
+/cache
+/.idea
+/source/*/charts
+/kubeconfig
+/.vagrant
+/dns.log

@@ -1,0 +1,74 @@
+---
+# Source: jumpserver/templates/chen/deployment-chen.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "jumpserver-jms-chen"
+  labels:
+    app.kubernetes.io/name: jumpserver
+    helm.sh/chart: jumpserver-v4.3.1
+    app.kubernetes.io/instance: jumpserver
+    app.kubernetes.io/version: "v4.3.1"
+    app.kubernetes.io/managed-by: Helm
+    app.jumpserver.org/name: jms-chen
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: jumpserver
+      app.kubernetes.io/instance: jumpserver
+      app.jumpserver.org/name: jms-chen
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: jumpserver
+        app.kubernetes.io/instance: jumpserver
+        app.jumpserver.org/name: jms-chen
+    spec:
+      serviceAccountName: default
+      securityContext:
+        {}
+      containers:
+        - name: jms-chen
+          securityContext:
+            {}
+          image: "docker.io/jumpserver/chen:v4.3.1-ce"
+          imagePullPolicy: "IfNotPresent"
+          env:
+            - name: CORE_HOST
+              value: "http://jumpserver-jms-core:8080"
+            - name: BOOTSTRAP_TOKEN
+              value: "4a971251446100c791e41acf5e773362"
+            - name: LOG_LEVEL
+              value: "ERROR"
+            - name: listening_port
+              value: "8082"
+            - name: REDIS_HOST
+              value: "redis-master"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: REDIS_PASSWORD
+              value: "redis-test"
+          ports:
+            - name: web
+              containerPort: 8082
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /chen
+              port: web
+            initialDelaySeconds: 60
+            timeoutSeconds: 5
+          readinessProbe:
+            null
+          resources:
+            {}
+          volumeMounts:
+            - mountPath: "/opt/chen/data"
+              name: "jms-chen-data"
+      restartPolicy: Always
+      volumes:
+        - persistentVolumeClaim:
+            claimName: 'jumpserver-jms-chen-data'
+          name: "jms-chen-data"

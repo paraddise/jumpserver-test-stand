@@ -1,0 +1,60 @@
+---
+# Source: jumpserver/templates/pre-install-initdb.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "jumpserver-jms-init-db"
+  labels:
+    app.jumpserver.org/name: jms-init-db
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "5"
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: jumpserver
+        app.kubernetes.io/instance: jumpserver
+        app.jumpserver.org/name: jms-core
+    spec:
+      securityContext:
+        {}
+      containers:
+        - name: jms-init-db
+          securityContext:
+            {}
+          image: "docker.io/jumpserver/core:v4.3.1-ce"
+          imagePullPolicy: "IfNotPresent"
+          command:
+            - /bin/bash
+            - "-c"
+            - ./jms upgrade_db
+          env:
+            - name: SECRET_KEY
+              value: "3ed50ddb7b8b2752771191c4b15f5ddc"
+            - name: BOOTSTRAP_TOKEN
+              value: "4a971251446100c791e41acf5e773362"
+            - name: DB_ENGINE
+              value: "postgresql"
+            - name: DB_HOST
+              value: "postgres-postgresql"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_USER
+              value: "jumpserver"
+            - name: DB_PASSWORD
+              value: "jumpserver"
+            - name: DB_NAME
+              value: "jumpserver"
+            - name: REDIS_HOST
+              value: "redis-master"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: REDIS_PASSWORD
+              value: "redis-test"
+            - name: DOMAINS
+              value: "app.jumpserver.test:31270, jumpserver-jms-core:8080"
+            - name: SESSION_EXPIRE_AT_BROWSER_CLOSE
+              value: "true"
+      restartPolicy: Never

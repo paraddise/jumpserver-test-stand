@@ -1,0 +1,60 @@
+global:
+  storageClass: local-path
+
+ingress:
+  hosts:
+    - "app.jumpserver.test"
+
+core:
+  env:
+    DOMAINS: app.jumpserver.test:31270, jumpserver-jms-core:8080
+  config:
+    secretKey: 3ed50ddb7b8b2752771191c4b15f5ddc
+    bootstrapToken: "4a971251446100c791e41acf5e773362"
+  persistence:
+    accessModes:
+      - ReadWriteOnce
+koko:
+  persistence:
+    accessModes:
+      - ReadWriteOnce
+lion:
+  persistence:
+    accessModes:
+      - ReadWriteOnce
+chen:
+  persistence:
+    accessModes:
+      - ReadWriteOnce
+magnus:
+  persistence:
+    accessModes:
+      - ReadWriteOnce
+xrdp:
+  persistence:
+    accessModes:
+      - ReadWriteOnce
+razor:
+  persistence:
+    accessModes:
+      - ReadWriteOnce
+video:
+  persistence:
+    accessModes:
+      - ReadWriteOnce
+web:
+  persistence:
+    accessModes:
+      - ReadWriteOnce
+externalRedis:
+  host: redis-master
+  port: 6379
+  password: redis-test
+
+externalDatabase:
+  engine: postgresql
+  host: postgres-postgresql
+  port: 5432
+  user: jumpserver
+  password: "jumpserver"
+  database: jumpserver

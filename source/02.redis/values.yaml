@@ -1,0 +1,4 @@
+global:
+  redis:
+    password: "redis-test"
+

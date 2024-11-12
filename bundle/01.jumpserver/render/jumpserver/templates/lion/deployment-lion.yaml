@@ -1,0 +1,78 @@
+---
+# Source: jumpserver/templates/lion/deployment-lion.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "jumpserver-jms-lion"
+  labels:
+    app.kubernetes.io/name: jumpserver
+    helm.sh/chart: jumpserver-v4.3.1
+    app.kubernetes.io/instance: jumpserver
+    app.kubernetes.io/version: "v4.3.1"
+    app.kubernetes.io/managed-by: Helm
+    app.jumpserver.org/name: jms-lion
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: jumpserver
+      app.kubernetes.io/instance: jumpserver
+      app.jumpserver.org/name: jms-lion
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: jumpserver
+        app.kubernetes.io/instance: jumpserver
+        app.jumpserver.org/name: jms-lion
+    spec:
+      serviceAccountName: default
+      securityContext:
+        {}
+      containers:
+        - name: jms-lion
+          securityContext:
+            {}
+          image: "docker.io/jumpserver/lion:v4.3.1-ce"
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - name: web
+              containerPort: 8081
+              protocol: TCP
+          env:
+            - name: CORE_HOST
+              value: "http://jumpserver-jms-core:8080"
+            - name: BOOTSTRAP_TOKEN
+              value: "4a971251446100c791e41acf5e773362"
+            - name: LOG_LEVEL
+              value: "ERROR"
+            - name: HTTPD_PORT
+              value: "8081"
+            - name: SHARE_ROOM_TYPE
+              value: "redis"
+            - name: REDIS_HOST
+              value: "redis-master"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: REDIS_PASSWORD
+              value: "redis-test"
+            - name: JUMPSERVER_ENABLE_FONT_SMOOTHING
+              value: "true"
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /lion/health/
+              port: web
+            initialDelaySeconds: 90
+            timeoutSeconds: 5
+          readinessProbe:
+            null
+          resources:
+            {}
+          volumeMounts:
+            - mountPath: "/opt/lion/data"
+              name: "jms-lion-data"
+      restartPolicy: Always
+      volumes:
+        - persistentVolumeClaim:
+            claimName: 'jumpserver-jms-lion-data'
+          name: "jms-lion-data"

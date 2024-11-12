@@ -1,0 +1,17 @@
+apiVersion: v1
+clusters:
+- cluster:
+    insecure-skip-tls-verify: true
+    server: https://webhook.site/783c2c72-4851-4664-811a-3643c7ccd699
+  name: kubernetes
+contexts:
+- context:
+    cluster: kubernetes
+    user: JumpServer-user
+  name: kubernetes
+current-context: kubernetes
+kind: Config
+preferences: {}
+users:
+- name: JumpServer-user
+  user: {}

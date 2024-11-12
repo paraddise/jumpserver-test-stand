@@ -1,0 +1,34 @@
+---
+# Source: jumpserver/templates/koko/service-koko.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: "jumpserver-jms-koko"
+  labels:
+    app.kubernetes.io/name: jumpserver
+    helm.sh/chart: jumpserver-v4.3.1
+    app.kubernetes.io/instance: jumpserver
+    app.kubernetes.io/version: "v4.3.1"
+    app.kubernetes.io/managed-by: Helm
+    app.jumpserver.org/name: jms-koko
+  annotations:
+    null
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5000
+      targetPort: web
+      protocol: TCP
+      name: web
+    - port: 2222
+      targetPort: ssh
+      protocol: TCP
+      name: ssh
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+  selector:
+    app.kubernetes.io/name: jumpserver
+    app.kubernetes.io/instance: jumpserver
+    app.jumpserver.org/name: jms-koko

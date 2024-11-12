@@ -1,0 +1,83 @@
+---
+# Source: jumpserver/templates/koko/deployment-koko.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "jumpserver-jms-koko"
+  labels:
+    app.kubernetes.io/name: jumpserver
+    helm.sh/chart: jumpserver-v4.3.1
+    app.kubernetes.io/instance: jumpserver
+    app.kubernetes.io/version: "v4.3.1"
+    app.kubernetes.io/managed-by: Helm
+    app.jumpserver.org/name: jms-koko
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: jumpserver
+      app.kubernetes.io/instance: jumpserver
+      app.jumpserver.org/name: jms-koko
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: jumpserver
+        app.kubernetes.io/instance: jumpserver
+        app.jumpserver.org/name: jms-koko
+    spec:
+      serviceAccountName: default
+      securityContext:
+        {}
+      containers:
+        - name: jms-koko
+          securityContext:
+            privileged: true
+          image: "docker.io/jumpserver/koko:v4.3.1-ce"
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - name: web
+              containerPort: 5000
+              protocol: TCP
+            - name: ssh
+              containerPort: 2222
+              protocol: TCP
+          env:
+            - name: CORE_HOST
+              value: "http://jumpserver-jms-core:8080"
+            - name: BOOTSTRAP_TOKEN
+              value: "4a971251446100c791e41acf5e773362"
+            - name: LOG_LEVEL
+              value: "ERROR"
+            - name: SSHD_PORT
+              value: "2222"
+            - name: HTTPD_PORT
+              value: "5000"
+            - name: REUSE_CONNECTION
+              value: "false"
+            - name: SHARE_ROOM_TYPE
+              value: "redis"
+            - name: REDIS_HOST
+              value: "redis-master"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: REDIS_PASSWORD
+              value: "redis-test"
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /koko/health/
+              port: web
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            null
+          resources:
+            {}
+          volumeMounts:
+            - mountPath: "/opt/koko/data"
+              name: "jms-koko-data"
+      restartPolicy: Always
+      volumes:
+        - persistentVolumeClaim:
+            claimName: 'jumpserver-jms-koko-data'
+          name: "jms-koko-data"

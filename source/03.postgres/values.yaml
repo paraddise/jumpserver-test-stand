@@ -1,0 +1,7 @@
+global:
+  postgresql:
+    auth:
+      username: jumpserver
+      password: jumpserver
+      postgresPassword: password
+      database: jumpserver

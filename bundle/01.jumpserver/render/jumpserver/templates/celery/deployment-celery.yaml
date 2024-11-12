@@ -1,0 +1,90 @@
+---
+# Source: jumpserver/templates/celery/deployment-celery.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "jumpserver-jms-celery"
+  labels:
+    app.jumpserver.org/name: jms-celery
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: jumpserver
+      app.kubernetes.io/instance: jumpserver
+      app.jumpserver.org/name: jms-core
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: jumpserver
+        app.kubernetes.io/instance: jumpserver
+        app.jumpserver.org/name: jms-core
+    spec:
+      serviceAccountName: default
+      securityContext:
+        {}
+      containers:
+        - name: jms-celery
+          securityContext:
+            {}
+          image: "docker.io/jumpserver/core:v4.3.1-ce"
+          imagePullPolicy: "IfNotPresent"
+          args: ["start", "task"]
+          env:
+            - name: SECRET_KEY
+              value: "3ed50ddb7b8b2752771191c4b15f5ddc"
+            - name: BOOTSTRAP_TOKEN
+              value: "4a971251446100c791e41acf5e773362"
+            - name: DEBUG
+              value: "false"
+            - name: LOG_LEVEL
+              value: "ERROR"
+            - name: HTTP_LISTEN_PORT
+              value: "8080"
+            - name: DB_ENGINE
+              value: "postgresql"
+            - name: DB_HOST
+              value: "postgres-postgresql"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_USER
+              value: "jumpserver"
+            - name: DB_PASSWORD
+              value: "jumpserver"
+            - name: DB_NAME
+              value: "jumpserver"
+            - name: REDIS_HOST
+              value: "redis-master"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: REDIS_PASSWORD
+              value: "redis-test"
+            - name: DOMAINS
+              value: "app.jumpserver.test:31270, jumpserver-jms-core:8080"
+            - name: SESSION_EXPIRE_AT_BROWSER_CLOSE
+              value: "true"
+          livenessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - /opt/jumpserver/utils/check_celery.sh
+            initialDelaySeconds: 60
+            timeoutSeconds: 5
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - test -e /tmp/worker_ready_celery
+            initialDelaySeconds: 60
+            timeoutSeconds: 5
+          resources:
+            {}
+          volumeMounts:
+            - mountPath: "/opt/jumpserver/data"
+              name: "jms-core-data"
+      restartPolicy: Always
+      volumes:
+        - persistentVolumeClaim:
+            claimName: 'jumpserver-jms-core-data'
+          name: "jms-core-data"
